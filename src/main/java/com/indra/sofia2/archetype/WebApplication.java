@@ -1,12 +1,13 @@
 package com.indra.sofia2.archetype;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 
+import com.indra.sofia2.proxy.Sofia2Initializer;
 
-@SpringBootApplication
+
+@SpringBootApplication(scanBasePackages="com.indra.sofia2")
 public class WebApplication extends SpringBootServletInitializer {
 
 	@Override
@@ -15,6 +16,7 @@ public class WebApplication extends SpringBootServletInitializer {
     }
 	
 	public static void main(String[] args) {
-		SpringApplication.run(WebApplication.class, args);
+		new SpringApplicationBuilder(WebApplication.class).initializers(new Sofia2Initializer()).run(args);
+
 	}
 }

@@ -1,62 +1,58 @@
 package com.indra.sofia2.archetype.controller;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.indra.sofia2.archetype.auth.CurrentUser;
-import com.indra.sofia2.archetype.auth.CustomUser;
-import com.indra.sofia2.archetype.service.PhoneService;
-import com.indra.sofia2.archetype.service.bean.phone.Phone;
-import com.indra.sofia2.archetype.service.bean.phone.PhoneWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.indra.sofia2.archetype.service.PhoneRepository;
+import com.indra.sofia2.archetype.service.bean.phone.ArchetypephoneOntology;
+import com.indra.sofia2.beans.SofiaId;
 
 
 @RestController
+@RequestMapping("/phone")
 public class PhoneController {
 	
 	@Autowired
-	private PhoneService phoneService;
+	private PhoneRepository repository;
 	
-	@RequestMapping(value = "/phone/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public  @ResponseBody List<PhoneWrapper> list (@CurrentUser CustomUser user) {
-		return phoneService.getAllPhones(user.getSessionKey());		
+	@RequestMapping(method = RequestMethod.GET, value="/list")
+    public String query() throws JsonProcessingException {
+		List<ArchetypephoneOntology> retorno = repository.consulta();
+		ObjectMapper objectMapper = new ObjectMapper();
+		String arrayToJson = objectMapper.writeValueAsString(retorno);
+		return arrayToJson;
 	}
 	
-	@RequestMapping(value = "/phone/{id}", method = RequestMethod.GET, 
-					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public  @ResponseBody Phone detail (@AuthenticationPrincipal CustomUser user, @PathVariable(value="id")String id) {		
-		
-		return phoneService.getPhone(user.getSessionKey(), id).getPhone();
-	}
+	@RequestMapping(method = RequestMethod.POST)
+    public String insert(@RequestBody ArchetypephoneOntology phone) throws JsonProcessingException {
+    	SofiaId id = repository.insert(phone);
+    	ObjectMapper objectMapper = new ObjectMapper();
+		String arrayToJson = objectMapper.writeValueAsString(id);
+		return arrayToJson;
+    }
 	
-	@RequestMapping(value = "/phone/create", method = RequestMethod.POST, 
-			produces = MediaType.APPLICATION_JSON_UTF8_VALUE, 
-			consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public  @ResponseBody Map<String, Boolean> create (@CurrentUser CustomUser user, @RequestBody Phone phone) {
-		
-		PhoneWrapper wrapper = new PhoneWrapper();
-		wrapper.setPhone(phone);
-		boolean created = phoneService.create(user.getSessionKey(), wrapper);
-		return Collections.singletonMap("created", created);		
-	}
+	@RequestMapping(method = RequestMethod.PUT)
+    public String update(@RequestBody ArchetypephoneOntology phone) throws JsonProcessingException {
+		List<SofiaId> ids = repository.update(phone);
+    	ObjectMapper objectMapper = new ObjectMapper();
+		String arrayToJson = objectMapper.writeValueAsString(ids);
+		return arrayToJson;
+    }
 	
-	@RequestMapping(value = "/phone/{id}", method = RequestMethod.DELETE, 
-					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public  @ResponseBody Map<String, Boolean> delete (@AuthenticationPrincipal CustomUser user, @PathVariable(value="id")String id) {		
-	
-		boolean deleted = phoneService.delete(user.getSessionKey(), id);
-		return Collections.singletonMap("deleted", deleted);
-		
-	}
+	@RequestMapping(value="/{id}", method = RequestMethod.DELETE)
+    public String delete(@PathVariable(value="id") String id) throws JsonProcessingException {
+		List<SofiaId> ids =repository.delete(id);
+    	ObjectMapper objectMapper = new ObjectMapper();
+  		String arrayToJson = objectMapper.writeValueAsString(ids);
+  		return arrayToJson;
+    }
 
 }

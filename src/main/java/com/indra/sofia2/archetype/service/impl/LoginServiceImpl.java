@@ -16,10 +16,7 @@ import com.indra.sofia2.archetype.auth.beans.AuthResponse;
 import com.indra.sofia2.archetype.security.model.LoginResponse;
 import com.indra.sofia2.archetype.security.model.UserLogin;
 import com.indra.sofia2.archetype.security.util.JwtTokenService;
-import com.indra.sofia2.archetype.service.KpiService;
 import com.indra.sofia2.archetype.service.LoginService;
-import com.indra.sofia2.archetype.service.bean.kpi.request.KpiJoinRequest;
-import com.indra.sofia2.archetype.service.bean.kpi.response.KpiJoinResponse;
 
 @Service
 public class LoginServiceImpl implements LoginService {
@@ -28,10 +25,10 @@ public class LoginServiceImpl implements LoginService {
 	
 	@Autowired
 	private AuthenticationService authService;
-	
+	/*
 	@Autowired
 	private KpiService kpiService;
-	
+	*/
 	@Value("${web.kpi.token:}")
 	private String webKpiToken;
 	
@@ -51,8 +48,6 @@ public class LoginServiceImpl implements LoginService {
 		LoginResponse resp = new LoginResponse("",false);
 		
 		if (authResponse.isAuthenticated()) {
-        	
-        	KpiJoinResponse joinResponse = kpiService.joinByToken(new KpiJoinRequest(webKpiToken, webKpiInstance));
         		        	
         	List<String> roles = authResponse.getResponse().getUser().getVirtualRoles();
         	roles.add(authResponse.getResponse().getUser().getRol());
@@ -62,7 +57,7 @@ public class LoginServiceImpl implements LoginService {
         	List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(commaSepRoles);
         	
         	CustomUser user  = new CustomUser(authLogin.getUsername(), authLogin.getPassword(), 
-        									  joinResponse.getSessionKey(), authorities);
+        									  "", authorities);
         	
         	
         	String token = jwtTokenService.generateToken(user);
